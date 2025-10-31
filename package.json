@@ -4,7 +4,9 @@
   "description": "webapp application fusing things learned so far through Boolean's course on SQL, express, react etc",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "watch": "node --watch app.js"
   },
   "keywords": [
     "SQL",
@@ -14,5 +16,10 @@
     "webapp"
   ],
   "author": "Christian Zaboli Vedovi",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.15.3",
+    "router": "^2.2.0"
+  }
 }
