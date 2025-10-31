@@ -14,7 +14,14 @@ res.json(results);
 function show(req, res) {
     const id = req.params.id;
     const postsSql = 'SELECT * FROM movies WHERE id = ?'
-    const sqlTags = `SELECT * FROM reviews WHERE id = ?`
+    const sqlTags = `SELECT 
+    reviews.name AS reviewer,
+    reviews.vote,
+    reviews.text AS review_text,
+    reviews.created_at AS posted_at,
+    reviews.updated_at AS updated_at
+FROM
+    reviews WHERE id = ?`
 
     sqlConnect.query(postsSql, [id], (err, results) => {
             if (err) return res.status(500).json({ error: 'Database query error (post)'});
