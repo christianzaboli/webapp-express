@@ -68,14 +68,32 @@ function update(req, res) {
                     WHERE
                         id = ?`
     sqlConnect.query(sql, [title, director, genre, release_year, abstract, image, id], (err, results) => {
-        if (err) return res.status(500).json({ error: 'Failed to update movie' })
-        res.json({ message: 'Movie updated correctly'})}
+        if (err) return res.status(500).json({ 
+            error: 'Failed to update movie',
+            reminder: 'USE THESE COL NAMES: title, director, genre, release_year(numerb), abstract, image'});
+        if (results.insertId === 0) return res.status(404).json({ error: 'Movie not found'});
+        res.status(202).json({ message: 'Movie updated correctly'})}
     );
 }
 
 // patch
 function patch(req, res) {
-
+    const id = req.params.id;
+    const value = req.body;
+    const sql = `UPDATE movies 
+                    SET 
+                        ?
+                    WHERE
+                        id = ?`
+    sqlConnect.query(sql, [value, id], (err, results) => {
+        if (err) return res.status(500).json({ 
+            error: 'Failed to modify movie info/s',
+            reminder: 'USE THESE COL NAMES: title, director, genre, release_year(numerb), abstract, image'});
+        if (results.insertId === 0) return res.status(404).json({ error: 'Movie not found'});
+            console.log(results);
+            
+        res.status(202).json({ message: 'Movie info modified correctly'})}
+    );
 
 }
 
