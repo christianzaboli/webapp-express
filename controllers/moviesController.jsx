@@ -55,7 +55,22 @@ function store(req, res) {
 
 // update
 function update(req, res) {
-
+    const {id} = req.params
+    const {title, director, genre, release_year, abstract, image} = req.body;
+    const sql = `UPDATE movies 
+                    SET 
+                        title = ?,
+                        director = ?,
+                        genre = ?,
+                        release_year = ?,
+                        abstract = ?,
+                        image = ?
+                    WHERE
+                        id = ?`
+    sqlConnect.query(sql, [title, director, genre, release_year, abstract, image, id], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to update movie' })
+        res.json({ message: 'Movie updated correctly'})}
+    );
 }
 
 // patch
