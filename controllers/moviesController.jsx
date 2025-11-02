@@ -13,8 +13,8 @@ res.json(results);
 // show
 function show(req, res) {
     const id = req.params.id;
-    const postsSql = 'SELECT * FROM movies WHERE id = ?'
-    const sqlTags = `SELECT 
+    const moviesSql = 'SELECT * FROM movies WHERE id = ?'
+    const reviewsSql = `SELECT 
     reviews.name AS reviewer,
     reviews.vote,
     reviews.text AS review_text,
@@ -23,22 +23,34 @@ function show(req, res) {
 FROM
     reviews WHERE id = ?`
 
-    sqlConnect.query(postsSql, [id], (err, results) => {
-            if (err) return res.status(500).json({ error: 'Database query error (post)'});
-            if (results.length === 0) return res.status(404).json({ error: 'Post not found'});
-            const post = results[0];
+    sqlConnect.query(moviesSql, [id], (err, results) => {
+            if (err) return res.status(500).json({ error: 'Database query error (Movie)'});
+            if (results.length === 0) return res.status(404).json({ error: 'Movie not found'});
+            const movie = results[0];
 
-        sqlConnect.query(sqlTags, [id], (err, results) => {
-            if (err) return res.status(500).json({error: 'Database query error (tags)'});
-                post.review = results[0];
-                res.json(post)
+        sqlConnect.query(reviewsSql, [id], (err, results) => {
+            if (err) return res.status(500).json({error: 'Database query error (reviews)'});
+                movie.review = results[0];
+                res.json(movie)
         });
     });
 }
 
 // post
-function post(req, res) {
- 
+function store(req, res) {
+
+    const {title, director, genre, release_year, abstract, image} = req.body;
+    const sql = `insert 
+                into movies (title, director, genre, release_year, abstract, image)
+                values (?, ?, ?, ?, ?, ?)`;
+    sqlConnect.query(sql, [title, director, genre, release_year, abstract, image], (err, results) => {
+        if (err) return res.status(500).json({ error: 'Failed to insert new movie' });
+        res.status(201);
+        console.log(results);
+        res.json({id: results.resultsId})
+        
+    })
+
 }
 
 // update
@@ -56,9 +68,9 @@ function patch(req, res) {
 function destroy(req, res) {
     const { id } = req.params;
 
-    sqlConnect.query('DELETE FROM posts WHERE id = ?', [id], 
-        (err) => {if (err) return res.status(500).json({ error: 'Failed to delete post'})});
+    sqlConnect.query('DELETE FROM movies WHERE id = ?', [id], 
+        (err) => {if (err) return res.status(500).json({ error: 'Failed to delete movie'})});
         res.sendStatus(204)
 };
 
-module.exports = { index, show, post, update, patch, destroy } 
+module.exports = { index, show, store, update, patch, destroy } 
