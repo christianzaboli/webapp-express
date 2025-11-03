@@ -1,20 +1,23 @@
 // import connessione al database
-const sqlConnect = require('../data/db')
+const sqlConnect = require('../data/db');
+const setImagePath = require('../middlewares/imagePath');
 
 // index
 function index(req, res) {
     const sql = 'SELECT * FROM movies';
-
+    
     sqlConnect.query(sql, (err, results) => {
-if (err) return res.status(500).json({ error: 'Database query failed' });
-res.json(results);
+        if (err) return res.status(500).json({ error: 'Database query failed' });
+    const movies = results
+    movies.forEach(movie => {movie.image === '' ? movie.image = null : movie.image = req.imagePath + movie.image});
+    res.json(movies);
 })};
 
 // show
 function show(req, res) {
     const id = req.params.id;
     const moviesSql = 'SELECT * FROM movies WHERE id = ?'
-    const reviewsSql = `SELECT 
+    const reviewSql = `SELECT 
     reviews.name AS reviewer,
     reviews.vote,
     reviews.text AS review_text,
@@ -27,8 +30,9 @@ FROM
             if (err) return res.status(500).json({ error: 'Database query error (Movie)'});
             if (results.length === 0) return res.status(404).json({ error: 'Movie not found'});
             const movie = results[0];
+            movie.image = req.imagePath + movie.image;
 
-        sqlConnect.query(reviewsSql, [id], (err, results) => {
+        sqlConnect.query(reviewSql, [id], (err, results) => {
             if (err) return res.status(500).json({error: 'Database query error (reviews)'});
                 movie.review = results[0];
                 res.json(movie)
@@ -89,9 +93,8 @@ function patch(req, res) {
         if (err) return res.status(500).json({ 
             error: 'Failed to modify movie info/s',
             reminder: 'USE THESE COL NAMES: title, director, genre, release_year(numerb), abstract, image'});
-        if (results.insertId === 0) return res.status(404).json({ error: 'Movie not found'});
+        if (results.affectedRows === 0) return res.status(404).json({ error: 'Movie not found'});
             console.log(results);
-            
         res.status(202).json({ message: 'Movie info modified correctly'})}
     );
 

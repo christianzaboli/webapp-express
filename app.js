@@ -10,9 +10,12 @@ app.use(express.static('public'));
 app.use(express.json())
 
 // importo i middlewares
+const imagePath = require('./middlewares/imagePath')
 const errorsHandler = require('./middlewares/errorsHandler')
 const notFound = require('./middlewares/notFound')
 const moviesRouter = require('./routers/movies')
+
+app.use(imagePath);
 
 // imposto l'indice del server
 app.get('/api', (req, res) => (
