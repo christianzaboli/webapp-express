@@ -10,10 +10,16 @@ app.use(express.static('public'));
 app.use(express.json())
 
 // importo i middlewares
+const cors = require("cors")
 const imagePath = require('./middlewares/imagePath')
 const errorsHandler = require('./middlewares/errorsHandler')
 const notFound = require('./middlewares/notFound')
 const moviesRouter = require('./routers/movies')
+
+// attivo middleware cross origin
+app.use(cors({
+    origin: process.env.FE_APP
+}))
 
 // attivo il middleware di reindirizzamento immagine sprima del passaggio per le rotte
 app.use(imagePath);
