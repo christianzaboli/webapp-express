@@ -1,6 +1,5 @@
 // import connessione al database
 const sqlConnect = require('../data/db');
-const setImagePath = require('../middlewares/imagePath');
 
 // index
 function index(req, res) {
@@ -12,7 +11,7 @@ function index(req, res) {
     
     // utilizzo del middleWare imagePath per reindirizzare
     results.forEach(movie => {
-        if (movie.image.search('.com') === -1) { // check sul percorso se é giá esistente e preso da fuori progetto
+        if (movie.image.search('https') === -1) { // check sul percorso se é giá esistente e preso da fuori progetto
             movie.image = movie.image === '' ? null : req.imagePath + movie.image
         }
     });
@@ -43,7 +42,7 @@ function show(req, res) {
             const movie = movieResult[0];
 
             // utilizzo del middleWare imagePath per reindirizzare
-            if (movie.image.search('.com') === -1) {    // check sul percorso se é giá esistente e preso da fuori progetto
+            if (movie.image.search('https') === -1) {    // check sul percorso se é giá esistente e preso da fuori progetto
                 movie.image = movie.image === '' ? null : req.imagePath + movie.image
             }; 
 
