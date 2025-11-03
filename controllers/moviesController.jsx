@@ -9,9 +9,14 @@ function index(req, res) {
     
     sqlConnect.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: 'Database query failed' });   // catch error
-    const movies = results
-    movies.forEach(movie => {movie.image === '' ? movie.image = null : movie.image = req.imagePath + movie.image});
-    res.json(movies);
+    
+    // utilizzo del middleWare imagePath per reindirizzare
+    results.forEach(movie => {
+        if (movie.image.search('.com') === -1) { // check sul percorso se é giá esistente e preso da fuori progetto
+            movie.image = movie.image === '' ? null : req.imagePath + movie.image
+        }
+    });
+    res.json(results);
 })};
 
 // show
@@ -22,25 +27,29 @@ function show(req, res) {
     const moviesSql = 'SELECT * FROM movies WHERE id = ?'
     const reviewSql = `
     SELECT 
-        reviews.name AS reviewer,
+        reviews.name,
         reviews.vote,
-        reviews.text AS review_text,
-        reviews.created_at AS posted_at,
-        reviews.updated_at AS updated_at
+        reviews.text,
+        reviews.created_at,
+        reviews.updated_at
     FROM
         reviews 
     WHERE 
         id = ?`
 
-    sqlConnect.query(moviesSql, [id], (err, results) => {
+    sqlConnect.query(moviesSql, [id], (err, movieResult) => {
             if (err) return res.status(500).json({ error: 'Database query error (Movie)'}); // catch error
-            if (results.length === 0) return res.status(404).json({ error: 'Movie not found'});
-            const movie = results[0];
-            movie.image = req.imagePath + movie.image;  // utilizzo del middleWare imagePath per reindirizzare
+            if (movieResult.length === 0) return res.status(404).json({ error: 'Movie not found'});
+            const movie = movieResult[0];
 
-        sqlConnect.query(reviewSql, [id], (err, results) => {
+            // utilizzo del middleWare imagePath per reindirizzare
+            if (movie.image.search('.com') === -1) {    // check sul percorso se é giá esistente e preso da fuori progetto
+                movie.image = movie.image === '' ? null : req.imagePath + movie.image
+            }; 
+
+        sqlConnect.query(reviewSql, [id], (err, reviewResult) => {
             if (err) return res.status(500).json({error: 'Database query error (reviews)'});    // catch error
-                movie.review = results[0];  //  aggiunta un proprietá review in base a ció che é trovato nel DB
+                movie.review = reviewResult[0];  //  aggiunta un proprietá review in base a ció che é trovato nel DB
                 res.json(movie)
         });
     });
@@ -59,12 +68,11 @@ function store(req, res) {
         (?, ?, ?, ?, ?, ?)`;
 
     sqlConnect.query(sql, [title, director, genre, release_year, abstract, image], (err, results) => {
-        if (err) return res.status(500).json({  // catch error
+        if (err) return res.status(400).json({  // catch error
             error: 'Failed to insert new movie',
             reminder: 'USE THESE COL NAMES: title, director, genre, release_year(numerb), abstract, image'});
-        res.status(201);
+        res.status(201).json(results);
         console.log(results);
-        res.json({id: results.resultsId})
     })
 }
 
@@ -111,7 +119,7 @@ function patch(req, res) {
     sqlConnect.query(sql, [value, id], (err, results) => {
         if (err) return res.status(500).json({  // catch error
             error: 'Failed to modify movie info/s',
-            reminder: 'USE THESE COL NAMES: title, director, genre, release_year(numerb), abstract, image'});
+            reminder: 'USE THESE COL NAMES: title, director, genre, release_year(number), abstract, image'});
         if (results.affectedRows === 0) return res.status(404).json({ error: 'Movie not found'});
             console.log(results);
         res.status(202).json({ message: 'Movie info modified correctly'})}
