@@ -36,6 +36,7 @@ function show(req, res) {
         m.id = ?`;
   const reviewSql = `
     SELECT 
+        reviews.id,
         reviews.name,
         reviews.vote,
         reviews.text,
@@ -65,12 +66,14 @@ function show(req, res) {
           .status(500)
           .json({ error: "Database query error (reviews)" }); // catch error
       movie.review = reviewResult; //  aggiunta un proprietá review in base a ció che é trovato nel DB
+      movie.average_vote = parseInt(movie.average_vote);
       res.json(movie);
     });
   });
 }
 
 // post
+// post MOVIES
 function store(req, res) {
   const { title, director, genre, release_year, abstract, image } = req.body;
 
@@ -91,12 +94,36 @@ function store(req, res) {
           // catch error
           error: "Failed to insert new movie",
           reminder:
-            "USE THESE COL NAMES: title, director, genre, release_year(numerb), abstract, image",
+            "USE THESE COL NAMES: title, director, genre, release_year(number), abstract, image",
         });
-      res.status(201).json(results);
+      res.status(201).json({
+        id: results.insertId,
+        message: "Movie has been added successfully",
+      });
       console.log(results);
     }
   );
+}
+// post REVIEWS
+function storeReview(req, res) {
+  const id = req.params.id;
+  const { name, vote, text } = req.body;
+
+  // stringa che computa mySQL nel DB
+  const sql =
+    "INSERT INTO `reviews` (`movie_id`, `name`, `vote`, `text`) VALUES (?, ?, ?, ?)";
+
+  sqlConnect.query(sql, [id, name, vote, text], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        // catch error
+        error: "Failed to insert new review",
+        reminder: "USE THESE COL NAMES: movie_id, name, vote, text",
+      });
+    res
+      .status(201)
+      .json({ id: results.id, message: "Review added successfully" });
+  });
 }
 
 // update
@@ -180,4 +207,4 @@ function destroy(req, res) {
   res.sendStatus(204);
 }
 
-module.exports = { index, show, store, update, patch, destroy };
+module.exports = { index, show, store, update, patch, destroy, storeReview };

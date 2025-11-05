@@ -13,6 +13,7 @@ router.get('/:id', moviesController.show)
 
 // store
 router.post('/', moviesController.store)
+router.post('/:id/reviews', moviesController.storeReview)
 
 // update
 router.put('/:id', moviesController.update)
